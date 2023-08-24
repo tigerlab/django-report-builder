@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+  redis:
+    image: redis
+  web:
+    build: .
+    command: python manage.py runserver_plus 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+  celery:
+    build: .
+    command: celery -A report_builder_demo worker -B --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    depends_on:
+      - db
+      - redis
+    environment:
+      C_FORCE_ROOT: "true"
+    volumes:
+      - .:/code
