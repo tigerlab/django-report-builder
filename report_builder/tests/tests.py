@@ -84,7 +84,7 @@ class ReportBuilderTests(TestCase):
 
         self.assertTrue(callable(get_limit_choices_to_callable))
         self.assertTrue(isinstance(lookup_dict['pk__in'], QuerySet))
-        self.assertQuerysetEqual(lookup_dict['pk__in'], map(repr, models), ordered=False)
+        self.assertQuerySetEqual(lookup_dict['pk__in'], map(repr, models), ordered=False)
 
     def test_report_builder_reports(self):
         url = '/report_builder/api/reports/'
@@ -229,7 +229,7 @@ class ReportBuilderTests(TestCase):
         response = self.client.put(f'/report_builder/api/report/{report.id}/',
                                     data=json.dumps(data),
                                     content_type='application/json',
-                                    HTTP_X_REQUESTED_WWITH='XMLHttpRequest')
+                                    headers={"x-requested-wwith": 'XMLHttpRequest'})
         self.assertEqual(response.status_code, 200)
 
         self.assertIsNone(report.displayfield_set.all()[0].sort)
@@ -638,7 +638,7 @@ class ReportTests(TestCase):
         generate_url = reverse('generate_report', args=[people_report.id])
         response = self.client.get(generate_url)
         # filter from 4 to 2 people
-        self.assertEquals(len(response.data['data']), 3)
+        self.assertEqual(len(response.data['data']), 3)
 
         # TimeField
         ff.field = 'hammer_time'
@@ -646,7 +646,7 @@ class ReportTests(TestCase):
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
         # DateTimeField
         ff.field = 'birth_date'
@@ -654,7 +654,7 @@ class ReportTests(TestCase):
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 2)
+        self.assertEqual(len(response.data['data']), 2)
 
     @freeze_time("2017-11-01 12:00:00")
     def test_filter_datetime_range(self):
@@ -682,7 +682,7 @@ class ReportTests(TestCase):
 
         generate_url = reverse('generate_report', args=[people_report.id])
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
         # TimeField
         ff.field = 'hammer_time'
@@ -691,7 +691,7 @@ class ReportTests(TestCase):
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
         # DateTimeField
         ff.field = 'birth_date'
@@ -700,7 +700,7 @@ class ReportTests(TestCase):
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
     @freeze_time("2017-11-01 12:00:00")
     def test_filter_datetime_relative_range(self):
@@ -726,14 +726,14 @@ class ReportTests(TestCase):
 
         generate_url = reverse('generate_report', args=[people_report.id])
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
         # DateField w/ partial day
         ff.filter_delta = self.day * -7 + 5
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
         # TimeField w/ hour delta
         ff.field = 'hammer_time'
@@ -741,14 +741,14 @@ class ReportTests(TestCase):
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 2)
+        self.assertEqual(len(response.data['data']), 2)
 
         # TimeField w/ sec delta
         ff.filter_delta = -5
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
         # DateTimeField w/ full day
         ff.field = 'birth_date'
@@ -756,14 +756,14 @@ class ReportTests(TestCase):
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 2)
+        self.assertEqual(len(response.data['data']), 2)
 
         # # DateTimeField w/ partial day
         ff.filter_delta = (self.day + self.hour) * -1
         ff.save()
 
         response = self.client.get(generate_url)
-        self.assertEquals(len(response.data['data']), 1)
+        self.assertEqual(len(response.data['data']), 1)
 
     def test_filter_datefield_relative_range_over_time(self):
         """
@@ -785,12 +785,12 @@ class ReportTests(TestCase):
                 filter_delta=self.day * -16,
             )
             response = self.client.get(generate_url)
-            self.assertEquals(len(response.data['data']), 3)
+            self.assertEqual(len(response.data['data']), 3)
 
             # login again 10 days later
             frozen_today.move_to(ten_days_later)
             response = self.client.get(generate_url)
-            self.assertEquals(len(response.data['data']), 1)
+            self.assertEqual(len(response.data['data']), 1)
 
     def test_filter_timefield_relative_range_over_time(self):
         """
@@ -813,12 +813,12 @@ class ReportTests(TestCase):
                 filter_delta=self.hour * -10,
             )
             response = self.client.get(generate_url)
-            self.assertEquals(len(response.data['data']), 1)
+            self.assertEqual(len(response.data['data']), 1)
 
             # login 4 hours later
             frozen_today.move_to(four_hours_later_today)
             response = self.client.get(generate_url)
-            self.assertEquals(len(response.data['data']), 2)
+            self.assertEqual(len(response.data['data']), 2)
 
     def test_filter_datetimefield_relative_range_over_time(self):
         """
@@ -841,12 +841,12 @@ class ReportTests(TestCase):
             )
 
             response = self.client.get(generate_url)
-            self.assertEquals(len(response.data['data']), 1)
+            self.assertEqual(len(response.data['data']), 1)
 
             # # login one month later
             frozen_today.move_to(one_month_later)
             response = self.client.get(generate_url)
-            self.assertEquals(len(response.data['data']), 2)
+            self.assertEqual(len(response.data['data']), 2)
 
     def test_groupby_id(self):
         self.make_people()

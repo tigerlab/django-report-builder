@@ -1,4 +1,5 @@
-from six import BytesIO, StringIO, text_type, string_types
+from six import text_type, string_types
+from io import BytesIO, StringIO
 
 from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
@@ -46,7 +47,7 @@ def generate_filename(title, ends_with):
     return title
 
 
-class DataExportMixin(object):
+class DataExportMixin:
     def build_sheet(self, data, ws, sheet_name='report', header=None, widths=None):
         first_row = 1
         column_base = 1
@@ -67,14 +68,14 @@ class DataExportMixin(object):
                 if isinstance(item, str):
                     # Change it to a unicode string
                     try:
-                        row[i] = text_type(item)
+                        row[i] = str(item)
                     except UnicodeDecodeError:
-                        row[i] = text_type(item.decode('utf-8', 'ignore'))
+                        row[i] = str(item.decode('utf-8', 'ignore'))
                 elif type(item) is dict:
-                    row[i] = text_type(item)
+                    row[i] = str(item)
                 # convert non native types to string
                 elif type(item) not in {int, float, bool}:
-                    row[i] = text_type(item)
+                    row[i] = str(item)
             try:
                 ws.append(row)
             except ValueError as e:
@@ -284,7 +285,7 @@ class DataExportMixin(object):
                     display_totals[display_field_key] = Decimal(0)
 
             else:
-                message += 'Error: Permission denied on access to {0}.'.format(
+                message += 'Error: Permission denied on access to {}.'.format(
                     display_field.name
                 )
 
@@ -411,7 +412,7 @@ class DataExportMixin(object):
 
         if hasattr(display_fields, 'filter'):
             defaults = {
-                None: text_type,
+                None: str,
                 datetime.date: lambda: datetime.date(datetime.MINYEAR, 1, 1),
                 datetime.datetime: lambda: datetime.datetime(datetime.MINYEAR, 1, 1),
             }
@@ -477,9 +478,9 @@ class DataExportMixin(object):
 
             for position, choice_list in choice_lists.items():
                 try:
-                    row[position] = text_type(choice_list[row[position]])
+                    row[position] = str(choice_list[row[position]])
                 except Exception:
-                    row[position] = text_type(row[position])
+                    row[position] = str(row[position])
 
             for pos, style in display_formats.items():
                 row[pos] = formatter(row[pos], style)
@@ -514,12 +515,12 @@ class DataExportMixin(object):
     def sort_helper(self, value, default):
         if value is None:
             value = default
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             value = value.lower()
         return value
 
 
-class GetFieldsMixin(object):
+class GetFieldsMixin:
     def get_fields(self, model_class, field_name='', path='', path_verbose=''):
         """ Get fields and meta data from a model
         :param model_class: A django model class
